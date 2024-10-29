@@ -79,6 +79,10 @@ def exportar_dados():
         json.dump(dados, f)
     print("Dados exportados para carros.json")    
 
+#----------------------------- Avaliacao ------------------------
+
+
+
 def main():
     while True:
         opcao = menu()
@@ -99,6 +103,11 @@ def main():
             break
         else:
             print("Opção inválida")
+
+
+
+
+
 
 
 #Principal

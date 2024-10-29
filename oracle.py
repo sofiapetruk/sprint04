@@ -9,9 +9,26 @@ def get_connection():
     connection = oracledb.connect('rm556585/221205@oracle.fiap.com.br:1521/orcl')
     return connection
 
-#API CARRO
+#--------------------------- Carro ------------------------
+@app.route("/carros/<int:id>", methods=["GET"])
+def findByIdCarro(id):
+
+
+    connection = get_connection()  
+    cursor = connection.cursor()  
+
+    sql = "SELECT * FROM cha_adicionar_carro WHERE id_carro = :id_carro"
+    cursor.execute(sql, {'id_carro': id})  
+    connection.commit()
+    
+    cursor.close()
+    connection.close()
+    
+    return jsonify()
+
+
 @app.route("/carros", methods=["GET"])
-def listar_todos():
+def listar_carro():
     connection = get_connection()  
     cursor = connection.cursor()   #agente que vai executar de fato o código de sql no banco de dados, através deles conseguimos funções para manipular os dados
 
@@ -33,13 +50,14 @@ def listar_todos():
         }
         lista_carros.append(carro)
 
-    
+    cursor.close()  
+    connection.close()  
 
     # Retornando a lista de carros em formato JSON
     return jsonify(lista_carros)
 
 @app.route("/carros", methods=["POST"])
-def insert():
+def insert_carro():
     # Pegando os dados enviados no corpo da requisição como JSON
     carro = request.json 
     marca = carro.get('marca') #get é usado para acessar os valores do JSON. Usar get permite retornar None se algum dos campos estiver faltando
@@ -61,7 +79,7 @@ def insert():
     return jsonify(carro) 
 
 @app.route("/carros/<int:id>", methods=["PUT"])
-def update(id):  
+def update_carro(id):  
 
     carro = request.json
     marca = carro.get('marca')
@@ -90,9 +108,7 @@ def update(id):
     return jsonify(carro)
 
 @app.route("/carros/<int:id>", methods=["DELETE"])
-def delete(id):
-
-
+def delete_carro(id):
     connection = get_connection()  
     cursor = connection.cursor()  
 
@@ -107,7 +123,7 @@ def delete(id):
 
 #--------------- Avaliação Cliente -----------------------
 @app.route("/avaliacoes/<int:id>", methods=["GET"])
-def listById(id):
+def listByIdAvaliacao(id):
     connection = get_connection()
     cursor = connection.cursor
 
@@ -120,8 +136,8 @@ def listById(id):
     return jsonify()
 
 
-@app.route("/avaliacoes", methods=["GET"])
-def listar_todos():
+@app.route("/avalicaoes", methods=["GET"])
+def listar_todos_avaliacao():
     connection = get_connection()
     cursor = connection.cursor() #Ele executa os comandos SQL e manipula os resultados ||  o cursor atua como intermediário entre o seu código Python e o banco de dados
 
@@ -132,9 +148,10 @@ def listar_todos():
     listas_avaliacoes = []
     for avalicao in resultados:
         avaliacaoes = {
-            "nome_cliente" : avalicao[0],
-            "avaliacao" : avalicao[1],
-            "comentario" : avalicao[2]
+            "id" : avaliacao[0],
+            "nome_cliente" : avalicao[1],
+            "avaliacao" : avalicao[2],
+            "comentario" : avalicao[3]
         }
         listas_avaliacoes.append(avaliacaoes)
 
@@ -144,7 +161,7 @@ def listar_todos():
     return jsonify(listas_avaliacoes) #converte sua lista de dicionários em um objeto JSON que pode ser retornado em uma resposta HTTP.
 
 @app.route("/avaliacoes", methods=["POST"])
-def inserir():
+def inserir_avaliacao():
     """
     request.json extrai os dados em formato JSON enviados pelo cliente. O cliente envia um objeto 
     JSON que pode incluir muitos dados, e request.json converte isso em um dicionário Python.
@@ -172,8 +189,8 @@ def inserir():
     você está simplesmente devolvendo ao cliente os dados que ele enviou, confirmando que foram recebidos e processados corretamente
     """
 
-@app.route("/avaliacoes/<int:id>")
-def update(id):
+@app.route("/avaliacoes/<int:id>", methods=["PUT"])
+def update_avaliacao(id):
     avaliacoes = request.json
     nome = avaliacoes.get("nome_cliente")
     avaliacao = avaliacoes.get("avaliacao")
@@ -192,7 +209,7 @@ def update(id):
     return jsonify(avaliacoes)
 
 @app.route("/avaliacoes/<int:id>", methods=["DELETE"])
-def delete(id):
+def delete_avaliacao(id):
 
     connection = get_connection
     cursor = connection.cursor
@@ -208,21 +225,39 @@ def delete(id):
 
 
 #--------------- Peca -----------------------------
-@app.route("/pecas", methods=["GET"])
-def listar_todos():
+@app.route("/pecas/<int:id>", methods=["DELETE"])
+def findByIdPeca(id):
 
     connection = get_connection()
     cursor = connection.cursor()
 
-    sql = "SELECT * FROM cha_peca"
+    sql = "SELECT * FROM cha_peca  WHERE id_peca = :id_peca"
+    cursor.execute(sql, {"id_peca" : id})
+    connection.commit()
+
+    connection.close()
+    cursor.close()
+
+    return jsonify()
+
+
+
+@app.route("/pecas", methods=["GET"])
+def listar_peca():
+
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    sql = "SELECT * FROM cha_peca "
     cursor.execute(sql)
     resultados = cursor.fetchall()
 
     lista_pecas = []
     for peca in resultados:
         pecas = {
-            "nome_peca" : peca[0],
-            "preco_peca" : peca[1]
+            "id_peca" : peca[0],
+            "nome_peca" : peca[1],
+            "preco_peca" : peca[2]
         }
         lista_pecas.append(pecas)
 
@@ -230,7 +265,7 @@ def listar_todos():
 
 
 @app.route("/pecas", methods=["POST"])
-def inserir():
+def inserir_peca():
 
     pecas = request.json
     nome = pecas.get("nome_peca")
@@ -248,7 +283,7 @@ def inserir():
     return jsonify(pecas)
 
 @app.route("/pecas/<int:id>", methods=["PUT"])
-def update(id):
+def update_peca(id):
 
     pecas = request.json
     nome = pecas.get("nome_peca")
@@ -267,7 +302,7 @@ def update(id):
 
 
 @app.route("/pecas/<int:id>", methods=["DELETE"])
-def delete(id):
+def delete_peca(id):
 
     connection = get_connection()
     cursor = connection.cursor()
@@ -281,9 +316,105 @@ def delete(id):
 
     return jsonify({"message" : "Carro deletado com sucesso"})
 
-#------------------- Oficinas ------------------------------
+# ---------------- Cadastro ------------------
+@app.route("/usuarios/<int:id>", methods=["GET"])
+def listbyIdCadastro(id):
+    
+    connection = get_connection()
+    cursor = connection.cursor
+    
+    sql = "SELECT * FROM chacadastrocliente WHERE id_cliente = :id_cliente"
+    cursor.execute(sql, {"id_cliente" : id})
+    
+    cursor.close() 
+    connection.close()
 
+    return jsonify()
+
+
+@app.route("/usuarios", methods=["GET"])
+def listar_cadastro():
+    connection = get_connection()
+    cursor = connection.cursor()
+    
+    sql = "SELECT * FROM chacadastrocliente"
+    cursor.execute(sql)
+    
+    resultados = cursor.fetchall()
+    
+    lista_cadastros = []
+    for cadastro in resultados:
+        cadastros = {
+            "id_cliente" : cadastro[0],
+            "nome_cliente" : cadastro[1],
+            "email" : cadastro[2],
+            "senha" : cadastro[3],
+            "numero" : cadastro[4],
+            "data_nascimento" : cadastro[5]
+        }
+        lista_cadastros.append(cadastro)
+        
+    cursor.close()  
+    connection.close()  
+        
+    return jsonify(lista_cadastros)
+
+@app.route("/usuarios", methods=["POST"])
+def inserir_cadastro():
+    
+    cadastro = request.json
+    nome = cadastro.get("nome_completo") #erro pode ser que não está com o mesmo nome
+    email = cadastro.get("email")
+    senha = cadastro.get("senha")
+    numero = cadastro.get("numero")
+    data = cadastro.get("data_nascimento")
+    
+    connection = get_connection()  
+    cursor = connection.cursor()   
+
+    sql = "INSERT INTO chacadastrocliente(nome_completo, email, senha, numero_telefone, data_nascimento) VALUES (:nome_completo, :email, :senha, :numero_telefone, :data_nascimento)"
+    cursor.execute(sql, {"nome_cliente" : nome, "email" : email, "senha" : senha, "numero_telefone" : numero, "data_nascimento" : data})
+    connection.commit()  
+
+    cursor.close()  
+    connection.close()  
+    
+    return jsonify(cadastro)
+
+@app.route("/usuarios/<int:id>", methods=["PUT"])
+def update_cadastro(id):
+    
+    cadastro = request.json
+    nome = cadastro.get("nome_completo") #erro pode ser que não está com o mesmo nome
+    email = cadastro.get("email")
+    senha = cadastro.get("senha")
+    numero = cadastro.get("numero")
+    data = cadastro.get("data_nascimento")
+    
+    connection = get_connection()  
+    cursor = connection.cursor()   
+
+    sql = "UPDATE chacadastrocliente SET nome_completo = ?, email = ?, senha = ?, numero_telefone = ?, data_nascimento = ? WHERE id_cliente = :id_cliente"
+    cursor(sql, {"nome_cliente" : nome, "email" : email, "senha" : senha, "numero_telefone" : numero, "data_nascimento" : data, "id_cliente" : id})
+    
+    connection = get_connection()  
+    cursor = connection.cursor()  
+    
+    return jsonify(cadastro)
+
+@app.route("/usuarios/<int:id>", methods=["DELETE"])
+def delete_cadastro(id):
+    
+    connection = get_connection()  
+    cursor = connection.cursor() 
+    
+    sql = "DELETE FROM chacadastrocliente  WHERE id_cliente = :id_cliente"
+    cursor.execute(sql, {"id_cliente" : id})
+    
+    return jsonify({"message" : "Carro deletado com sucesso"})
+    
+    
 
 #Principal    
-if __name__ == "__main__":
-    app.run(debug='True') #quero minha aplicação execute no servidor    
+
+app.run(debug='True')   
